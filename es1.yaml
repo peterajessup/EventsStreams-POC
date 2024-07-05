@@ -1,0 +1,135 @@
+apiVersion: eventstreams.ibm.com/v1beta2
+kind: EventStreams
+metadata:
+  name: es1 
+spec:
+  version: latest
+  license:
+    # By installing this product you accept the license terms at https://ibm.biz/ea-license
+    accept: true
+    license: "L-HRZF-DWHH7A"
+    use: "EventAutomationProduction"
+  adminApi:
+    endpoints:
+      - name: ingress
+        type: ingress
+        host: adminapi.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
+        class: nginx
+        containerPort: 8001
+  adminUI:
+    authentication:
+      - type: scram-sha-512
+    endpoints:
+      - name: ingress
+        type: ingress
+        host: adminui.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
+        class: nginx
+        containerPort: 3000
+  apicurioRegistry:
+    endpoints:
+      - name: ingress
+        type: ingress
+        host: apicurio.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
+        class: nginx
+        containerPort: 8002
+  collector: {}
+  restProducer:
+    endpoints:
+      - name: ingress
+        type: ingress
+        host: restproducer.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
+        class: nginx
+        containerPort: 8003
+  strimziOverrides:
+    kafkaExporter: {}
+    kafka:
+      replicas: 3
+      authorization:
+        type: simple
+      config:
+        inter.broker.protocol.version: "3.6"
+        log.cleaner.threads: 6
+        num.io.threads: 24
+        num.network.threads: 9
+        num.replica.fetchers: 3
+        offsets.topic.replication.factor: 3
+        default.replication.factor: 3
+        min.insync.replicas: 2
+      jmxOptions: {}
+      listeners:
+        - name: external
+          port: 9094
+          type: ingress
+          tls: true
+          authentication:
+            type: scram-sha-512
+          configuration:
+            bootstrap:
+              host: bootstrap.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
+            brokers:
+              - broker: 0
+                host: broker0.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
+              - broker: 1
+                host: broker1.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
+              - broker: 2
+                host: broker2.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
+            class: nginx
+      listeners:
+        - name: externaltls
+          port: 9096
+          type: ingress
+          tls: true
+          authentication:
+            type: tls
+          configuration:
+            bootstrap:
+              host: tls-bootstrap.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
+            brokers:
+              - broker: 0
+                host: tls-broker0.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
+              - broker: 1
+                host: tls-broker1.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
+              - broker: 2
+                host: tls-broker2.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
+            class: nginx
+        - name: tls
+          port: 9093
+          type: internal
+          tls: true
+          authentication:
+            type: tls
+        - name: tlsone
+          port: 9095
+          type: internal
+          tls: true
+          authentication:
+            type: scram-sha-512
+      metricsConfig:
+        type: jmxPrometheusExporter
+        valueFrom:
+          configMapKeyRef:
+            key: kafka-metrics-config.yaml
+            name: prod-3-brokers-metrics-config
+      resources:
+        requests:
+          memory: 8096Mi
+          cpu: 2000m
+        limits:
+          memory: 8096Mi
+          cpu: 2000m
+      storage:
+        type: persistent-claim
+        size: 10Gi
+        class: ebs-sc
+    zookeeper:
+      replicas: 3
+      metricsConfig:
+        type: jmxPrometheusExporter
+        valueFrom:
+          configMapKeyRef:
+            key: zookeeper-metrics-config.yaml
+            name: prod-3-brokers-metrics-config
+      storage:
+        type: persistent-claim
+        size: 4Gi
+        class: ebs-sc

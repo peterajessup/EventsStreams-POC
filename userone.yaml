@@ -1,0 +1,49 @@
+apiVersion: eventstreams.ibm.com/v1beta2
+kind: KafkaUser
+metadata:
+  name: userone
+  namespace: es
+  labels:
+    eventstreams.ibm.com/cluster: es1 
+    backup.eventstreams.ibm.com/component: kafkauser
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: cluster
+        operations: 
+          - Alter
+          - Create
+          - Describe
+          - DescribeConfigs
+      - resource:
+          type: topic
+          name: '*'
+          patternType: literal
+        operations: 
+          - Create
+          - Delete
+          - Read
+          - Write
+          - DescribeConfigs
+          - AlterConfigs
+      - resource:
+          type: topic
+          name: __schema_
+          patternType: prefix
+        operations: 
+          - Alter
+          - Read
+          - Write
+      - resource:
+          type: group
+          name: '*'
+          patternType: literal
+        operations:
+          - Create
+          - Delete
+          - Read
+          - Write

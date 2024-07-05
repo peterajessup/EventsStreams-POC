@@ -1,0 +1,11 @@
+apiVersion: eventstreams.ibm.com/v1beta1
+kind: EventStreamsGeoReplicator
+metadata:
+  labels:
+    eventstreams.ibm.com/cluster: prod-3-brokers 
+  name: prod-3-brokers 
+  namespace: es 
+spec:
+  version: latest 
+  replicas: 3
+

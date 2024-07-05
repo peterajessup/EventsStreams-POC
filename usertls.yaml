@@ -1,0 +1,43 @@
+apiVersion: eventstreams.ibm.com/v1beta2
+kind: KafkaUser
+metadata:
+  name: usertls
+  namespace: es
+  labels:
+    eventstreams.ibm.com/cluster: es1 
+    backup.eventstreams.ibm.com/component: kafkauser
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: cluster
+        operations: 
+          - Alter
+      - resource:
+          type: topic
+          name: '*'
+          patternType: literal
+        operations: 
+          - Create
+          - Delete
+          - Read
+          - Write
+      - resource:
+          type: topic
+          name: __schema_
+          patternType: prefix
+        operations: 
+          - Alter
+          - Read
+      - resource:
+          type: group
+          name: '*'
+          patternType: literal
+        operations:
+          - Create
+          - Delete
+          - Read
+          - Write
