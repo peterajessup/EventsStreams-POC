@@ -1,6 +1,6 @@
 # EventsStreams-POC
 Assets for EventStreams
-es1.yaml : an example eventStreams CR
+es1.yaml : an example eventStreams CR <br>
 usertls.yaml : an example mTls user
 userone.yaml : an example scram user
 georep.yaml : an example georeplication CR
