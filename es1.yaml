@@ -74,7 +74,6 @@ spec:
               - broker: 2
                 host: broker2.a9da4968068a5472ebdec1a31fe7fa3f-1740474262.us-east-1.elb.amazonaws.com
             class: nginx
-      listeners:
         - name: externaltls
           port: 9096
           type: ingress
