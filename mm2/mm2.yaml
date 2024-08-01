@@ -1,0 +1,152 @@
+kind: KafkaMirrorMaker2
+apiVersion: eventstreams.ibm.com/v1beta2
+metadata:
+  name: mm2
+  namespace: ap-southeast-4
+spec:
+  # where to run Mirror Maker
+  connectCluster: ap4-eventstreams
+
+  ##################################################
+  # SPECIFY THE MIRRORS TO RUN
+  ##################################################
+  mirrors:
+    #-----------------------------------------
+    # ap1->ap4
+    #-----------------------------------------
+    - sourceCluster: ap1-eventstreams
+      targetCluster: ap4-eventstreams
+      #
+      # mirror the messages on the "Loosehanger" topics ("LH.ORDERS")
+      #
+      topicsPattern: LH.ORDERS
+      sourceConnector:
+        config:
+          # don't check for new topics as we're not expecting
+          #  topics to be created during the migration process
+          refresh.topics.enabled: false
+
+          # replication factor to use for created topics
+          replication.factor: 3
+
+          # match the names of topics in the target cluster to the
+          #  name of the topics in the source cluster
+          replication.policy.class: org.apache.kafka.connect.mirror.IdentityReplicationPolicy
+
+          # use the target cluster to store the offset mapping information
+          offset-syncs.topic.location: target
+          # config for offset-syncs topic
+          offset-syncs.topic.replication.factor: 3
+          # max offset lag before sync'ing offset mapping
+          offset.lag.max: 0
+
+          # don't try to mirror the ACL's, as we will use the
+          #  User Operator for this
+          sync.topic.acls.enabled: false
+
+          # don't sync config changes to topics as we're not expecting
+          #  topics to be modified during the migration process
+          sync.topic.configs.enabled: false
+      #
+      # mirror consumer group offsets
+      #
+      # pattern for names of consumer groups to sync
+      groupsPattern: consumer-.*
+      checkpointConnector:
+        config:
+          # sync consumer offsets to the target cluster's __consumer_offsets topic
+          emit.checkpoints.enabled : true
+          sync.group.offsets.enabled: true
+
+          # sync consumer offsets every minute
+          emit.checkpoints.interval.seconds: 60
+          sync.group.offsets.interval.seconds: 60
+
+          # check for new consumer groups that match the pattern every 10 minutes
+          refresh.groups.enabled: true
+          refresh.groups.interval.seconds: 600
+
+          # match the names of topics in the target cluster to the
+          #  name of the topics in the source cluster
+          replication.policy.class: org.apache.kafka.connect.mirror.IdentityReplicationPolicy
+
+          # use the target cluster for offset mapping information
+          offset-syncs.topic.location: target
+
+          # config for checkpoints topic
+          checkpoints.topic.replication.factor: 3
+
+
+  ##################################################
+  # DEFINE THE KAFKA CLUSTERS TO USE FOR MIRRORING
+  ##################################################
+  clusters:
+    #-----------------------------------------
+    # Source cluster
+    #-----------------------------------------
+    - alias: ap1-eventstreams
+      bootstrapServers: ap1-eventstreams-kafka-bootstrap.ap-southeast-1.svc:9098
+      authentication:
+        username: mm2-ap-southeast-1
+        passwordSecret:
+          password: password
+          secretName: mm2-ap-southeast-1
+        type: scram-sha-512
+      tls:
+        trustedCertificates:
+          - certificate: ca.crt
+            secretName: ap4-eventstreams-cluster-ca-cert
+    #-----------------------------------------
+    # Target Cluster region
+    #-----------------------------------------
+    - alias: ap4-eventstreams
+      bootstrapServers: ap4-eventstreams-kafka-bootstrap.ap-southeast-4.svc:9098
+      authentication:
+        username: mm2-ap-southeast-4
+        passwordSecret:
+          password: password
+          secretName: mm2-ap-southeast-4
+        type: scram-sha-512
+      config:
+        # avoid mirroring duplicate events on restarts or errors
+        exactly.once.source.support: enabled
+        # identities for resources that MM2 will create for internal use
+        group.id: mm2
+        status.storage.topic: __mm2_status
+        offset.storage.topic: __mm2_offsets
+        config.storage.topic: __mm2_configs
+        status.storage.replication.factor: 3
+        config.storage.replication.factor: 3
+        offset.storage.replication.factor: 3
+        key.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+        value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+      tls:
+        trustedCertificates:
+          - certificate: ca.crt
+            secretName: ap4-eventstreams-cluster-ca-cert
+
+
+  #-----------------------------------------
+  # spec for the Mirror Maker pod
+  #-----------------------------------------
+  replicas: 1
+  resources:
+    requests:
+      cpu: 2000m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  template:
+    pod:
+      metadata:
+        annotations:
+          cloudpakId: c8b82d189e7545f0892db9ef2731b90d
+          productVersion: 11.3.1
+          productID: 2a79e49111f44ec3acd89608e56138f5
+          cloudpakName: IBM Cloud Pak for Integration
+          productChargedContainers: mm2-mirrormaker2
+          productCloudpakRatio: '2:1'
+          productName: IBM Event Streams for Non Production
+          eventstreams.production.type: CloudPakForIntegrationNonProduction
+          productMetric: VIRTUAL_PROCESSOR_CORE

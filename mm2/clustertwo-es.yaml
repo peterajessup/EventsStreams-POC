@@ -1,0 +1,53 @@
+apiVersion: eventstreams.ibm.com/v1beta2
+kind: EventStreams
+metadata:
+  name: ap4-eventstreams
+  namespace: ap-southeast-4
+  annotations:
+    eventstreams.ibm.com/apicurio-registry-version: '>=2.4'
+spec:
+  adminApi: {}
+  adminUI:
+    authentication:
+      - type: scram-sha-512
+  license:
+    accept: true
+    license: L-HRZF-DWHH7A
+    use: EventAutomationNonProduction
+  requestIbmServices:
+    iam: false
+    monitoring: false
+  strimziOverrides:
+    # reuse the same certificate authority from the
+    #  original cluster, rather than generate new ones
+    clusterCa:
+      generateCertificateAuthority: false
+    clientsCa:
+      generateCertificateAuthority: false
+    entityOperator:
+      topicOperator: {}
+      userOperator: {}
+    kafka:
+      authorization:
+        type: simple
+      config:
+        auto.create.topics.enable: false
+      listeners:
+        - name: internal
+          authentication:
+            type: scram-sha-512
+          port: 9098
+          tls: true
+          type: internal
+      replicas: 3
+      storage:
+        type: persistent-claim
+        size: 10Gi
+        class: ocs-storagecluster-cephfs
+    zookeeper:
+      replicas: 3
+      storage:
+        type: persistent-claim
+        size: 2Gi
+        class: ocs-storagecluster-cephfs
+  version: latest

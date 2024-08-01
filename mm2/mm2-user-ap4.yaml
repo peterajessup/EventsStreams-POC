@@ -1,0 +1,94 @@
+apiVersion: eventstreams.ibm.com/v1beta2
+kind: KafkaUser
+metadata:
+  name: mm2-ap-southeast-4
+  namespace: ap-southeast-4
+  labels:
+    eventstreams.ibm.com/cluster: ap4-eventstreams
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      # consumer group that will be used by MirrorMaker
+      - operations:
+          - Read
+        resource:
+          name: mm2
+          type: group
+      # access to the topics that MirrorMaker uses to store state
+      - operations:
+          - Create
+          - Describe
+          - DescribeConfigs
+          - Read
+          - Write
+        resource:
+          name: __mm2_configs
+          type: topic
+      - operations:
+          - Create
+          - Describe
+          - DescribeConfigs
+          - Read
+          - Write
+        resource:
+          name: __mm2_status
+          type: topic
+      - operations:
+          - Create
+          - Describe
+          - DescribeConfigs
+          - Read
+          - Write
+        resource:
+          name: __mm2_offsets
+          type: topic
+      # access to the topics where MirrorMaker will store offset mappings
+      - operations:
+          - Create
+          - DescribeConfigs
+          - Read
+          - Write
+        resource:
+          name: mm2-offset-syncs.ap1-eventstreams.internal
+          type: topic
+      - operations:
+          - Create
+          - Describe
+          - Read
+          - Write
+        resource:
+          type: topic
+          name: ap1-eventstreams.checkpoints.internal
+      # topics that MirrorMaker will create and produce mirror'ed messages to
+      - operations:
+          - Create
+          - Alter
+          - AlterConfigs
+          - Write
+          - Read
+        resource:
+          name: LH.
+          patternType: prefix
+          type: topic
+      # consumer groups that Mirror Maker will sync
+      - operations:
+          - Read
+          - Describe
+        resource:
+          type: group
+          name: consumer-
+          patternType: prefix
+      - operations:
+          - Describe
+        resource:
+          type: cluster
+      # support for using transactions
+      - operations:
+          - Write
+        resource:
+          name: '*'
+          patternType: literal
+          type: transactionalId

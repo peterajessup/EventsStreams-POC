@@ -1,0 +1,38 @@
+apiVersion: eventstreams.ibm.com/v1beta2
+kind: KafkaUser
+metadata:
+  name: es-admin
+  namespace: ap-southeast-4
+  labels:
+    app.kubernetes.io/instance: ap4-eventstreams
+    eventstreams.ibm.com/cluster: ap4-eventstreams
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      - operations:
+          - Alter
+          - DescribeConfigs
+        resource:
+          type: cluster
+      - operations:
+          - Create
+          - Read
+          - Write
+          - Delete
+          - DescribeConfigs
+          - Alter
+          - AlterConfigs
+        resource:
+          name: '*'
+          patternType: literal
+          type: topic
+      - operations:
+          - Read
+          - Delete
+        resource:
+          name: '*'
+          patternType: literal
+          type: group

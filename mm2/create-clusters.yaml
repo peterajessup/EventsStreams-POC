@@ -1,0 +1,20 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  annotations:
+      openshift.io/description: "Project containing event streams source cluster"
+      openshift.io/display-name: ""
+  labels:
+    kubernetes.io/metadata.name: ap-southeast-1
+  name: ap-southeast-1
+--- 
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  annotations:
+      openshift.io/description: "Project containing event streams migration target cluster"
+      openshift.io/display-name: ""
+  labels:
+    kubernetes.io/metadata.name: ap-southeast-4
+  name: ap-southeast-4
+---

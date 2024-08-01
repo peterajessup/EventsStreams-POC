@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  password: Qm5iQjVSNnlDb1Y3d1Zra3pZTzNnT0w4Y0hyQjZySGk=
+  sasl.jaas.config: b3JnLmFwYWNoZS5rYWZrYS5jb21tb24uc2VjdXJpdHkuc2NyYW0uU2NyYW1Mb2dpbk1vZHVsZSByZXF1aXJlZCB1c2VybmFtZT0ibW0yLWFwLXNvdXRoZWFzdC0xIiBwYXNzd29yZD0iQm5iQjVSNnlDb1Y3d1Zra3pZTzNnT0w4Y0hyQjZySGkiOw==
+kind: Secret
+metadata:
+  name: mm2-ap-southeast-1
+  namespace: ap-southeast-4
+type: Opaque

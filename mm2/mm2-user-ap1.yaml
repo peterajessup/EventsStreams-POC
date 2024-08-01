@@ -1,0 +1,33 @@
+apiVersion: eventstreams.ibm.com/v1beta2
+kind: KafkaUser
+metadata:
+  name: mm2-ap-southeast-1
+  namespace: ap-southeast-1
+  labels:
+    eventstreams.ibm.com/cluster: ap1-eventstreams
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      # access to the topics that MirrorMaker will consume messages from
+      - operations:
+          - DescribeConfigs
+          - Read
+        resource:
+          name: LH.
+          patternType: prefix
+          type: topic
+      # access to the consumer groups that Mirror Maker will sync
+      - operations:
+          - Describe
+        resource:
+          type: group
+          name: consumer-
+          patternType: prefix
+      # access to the consumer groups that Mirror Maker will sync
+      - operations:
+          - Describe
+        resource:
+          type: cluster
